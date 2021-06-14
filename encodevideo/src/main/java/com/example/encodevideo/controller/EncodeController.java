@@ -54,7 +54,7 @@ public class EncodeController{
 			if (statObject != null && statObject.length() > 0) {
 				InputStream stream = minioClient.getObject(MinioProp.MINIO_BUCKET, fileName);
 
-				File originFile = new File("originFile.mp4");
+				File originFile = File.createTempFile("originFile", ".mp4");
 				FileOutputStream fos = new FileOutputStream(originFile);
 				int count=0;
 				byte[] b = new byte[100];
@@ -66,19 +66,20 @@ public class EncodeController{
 				stream.close();
 				fos.close();
 
-				File file_720p = new File("file_720p.mp4");
+				File file_720p = File.createTempFile("file_720p", ".mp4");
+				File file_360p = File.createTempFile("file_360p", ".mp4");
 
-				System.out.print(originFile.getAbsolutePath());
-				boolean flag = transform("D:\\Program\\ffmpeg-4.4-essentials_build\\bin\\ffmpeg.exe", originFile.getAbsolutePath(), file_720p.getAbsolutePath(), "1280x720");
+				transform("D:\\Program\\ffmpeg-4.4-essentials_build\\bin\\ffmpeg.exe", originFile.getAbsolutePath(), file_720p.getAbsolutePath(), "1280x720");
+				transform("D:\\Program\\ffmpeg-4.4-essentials_build\\bin\\ffmpeg.exe", originFile.getAbsolutePath(), file_360p.getAbsolutePath(), "600x360");
 
 				InputStream in_720p = new FileInputStream(file_720p);
+				InputStream in_360p = new FileInputStream(file_360p);
 				minioClient.putObject(MinioProp.MINIO_BUCKET1,"720p_"+fileName,in_720p,null, null, null, contentType);
-				Map<String,Object> data=new HashMap<>();
-				data.put("bucketName",MinioProp.MINIO_BUCKET1);
-				data.put("fileName","_720p" + fileName);
+				minioClient.putObject(MinioProp.MINIO_BUCKET2,"360p_"+fileName,in_360p,null, null, null, contentType);
 
-				// originFile.delete();
-				// file_720p.delete();
+				originFile.delete();
+				file_720p.delete();
+				file_360p.delete();
 			}
 		}
 		catch (Exception e){
@@ -103,15 +104,6 @@ public class EncodeController{
 			BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream(),"gbk"));
 			String line;
 			while ((line = is.readLine()) != null) {
-				if (line.toLowerCase().startsWith("warning")) {
-					System.err.println("\tWARNING: " + line);
-				} else if (line.toLowerCase().startsWith("error")) {
-					System.err.println("\tERROR: " + line);
-				} else if (line.toLowerCase().startsWith("fatal")) {
-					System.err.println("\tFATAL ERROR: " + line);
-				} else {
-					System.out.println("\t" + line);
-				}
 			}
 			p.waitFor();
 		}catch (Exception e) {
@@ -125,8 +117,6 @@ public class EncodeController{
         command.add(ffmpegPath); // 添加转换工具路径
         command.add("-i"); // 添加参数＂-i＂，该参数指定要转换的文件
         command.add(oldfilepath); // 添加要转换格式的视频文件的路径
-		command.add("-b:v");
-		command.add("10000k");
         
         command.add("-s"); // 设置分辨率
         command.add(resolution);
