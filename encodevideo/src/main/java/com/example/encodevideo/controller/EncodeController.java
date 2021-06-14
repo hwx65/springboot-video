@@ -1,6 +1,13 @@
 package com.example.encodevideo.controller;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,12 +54,31 @@ public class EncodeController{
 			if (statObject != null && statObject.length() > 0) {
 				InputStream stream = minioClient.getObject(MinioProp.MINIO_BUCKET, fileName);
 
-				
+				File originFile = new File("originFile.mp4");
+				FileOutputStream fos = new FileOutputStream(originFile);
+				int count=0;
+				byte[] b = new byte[100];
+		
+				while((count = stream.read(b)) != -1) {                
+					fos.write(b, 0,count);
+				}
 
-				minioClient.putObject(MinioProp.MINIO_BUCKET1,fileName,stream ,null, null, null, contentType);
+				stream.close();
+				fos.close();
+
+				File file_720p = new File("file_720p.mp4");
+
+				System.out.print(originFile.getAbsolutePath());
+				boolean flag = transform("D:\\Program\\ffmpeg-4.4-essentials_build\\bin\\ffmpeg.exe", originFile.getAbsolutePath(), file_720p.getAbsolutePath(), "1280x720");
+
+				InputStream in_720p = new FileInputStream(file_720p);
+				minioClient.putObject(MinioProp.MINIO_BUCKET1,"720p_"+fileName,in_720p,null, null, null, contentType);
 				Map<String,Object> data=new HashMap<>();
 				data.put("bucketName",MinioProp.MINIO_BUCKET1);
-				data.put("fileName",fileName);
+				data.put("fileName","_720p" + fileName);
+
+				// originFile.delete();
+				// file_720p.delete();
 			}
 		}
 		catch (Exception e){
@@ -60,8 +86,7 @@ public class EncodeController{
 		}
     }
 
-	public static Boolean transform(String ffmpegPath, String oldPath, String newPath, String resolution) throws FFmpegException {
-        boolean flag = transform("D:\\ffmpeg\\ffmpeg2016\\bin\\ffmpeg.exe", "d:\\ys\\StoryBrooke.mp4", "d:\\ys\\480p.flv", "480x320");
+	public static Boolean transform(String ffmpegPath, String oldPath, String newPath, String resolution){
 		List<String> command = getFfmpegCommand(ffmpegPath, oldPath, newPath, resolution);
         if (null != command && command.size() > 0) {
             return process(command);
@@ -69,64 +94,44 @@ public class EncodeController{
         return false;
     }
 
-    private static boolean process(List<String> command) throws FFmpegException {
-        try {
-            if (null == command || command.size() == 0)
-                return false;
-            Process videoProcess = new ProcessBuilder(command).redirectErrorStream(true).start();
-            videoProcess.getInputStream().close();
-            int exitcode = videoProcess.waitFor();
-            if (exitcode == 1)
-                return false;
-            return true;
-        } catch (Exception e) {
-        }
-		return true;
-    }
+    private static boolean process(List<String> commands) {
+		try{
+			ProcessBuilder pb = new ProcessBuilder(commands);
+			pb.redirectErrorStream(true);
+			Process p = pb.start();//启动进程
 
-    private static List<String> getFfmpegCommand(String ffmpegPath, String oldfilepath, String outputPath, String resolution) throws FFmpegException {
+			BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream(),"gbk"));
+			String line;
+			while ((line = is.readLine()) != null) {
+				if (line.toLowerCase().startsWith("warning")) {
+					System.err.println("\tWARNING: " + line);
+				} else if (line.toLowerCase().startsWith("error")) {
+					System.err.println("\tERROR: " + line);
+				} else if (line.toLowerCase().startsWith("fatal")) {
+					System.err.println("\tFATAL ERROR: " + line);
+				} else {
+					System.out.println("\t" + line);
+				}
+			}
+			p.waitFor();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+    private static List<String> getFfmpegCommand(String ffmpegPath, String oldfilepath, String outputPath, String resolution) {
         List<String> command = new ArrayList<String>();
         command.add(ffmpegPath); // 添加转换工具路径
         command.add("-i"); // 添加参数＂-i＂，该参数指定要转换的文件
         command.add(oldfilepath); // 添加要转换格式的视频文件的路径
-        command.add("-qscale"); // 指定转换的质量
-        command.add("4");
+		command.add("-b:v");
+		command.add("10000k");
         
-        /*command.add("-ab"); //设置音频码率
-        command.add("64"); 
-        command.add("-ac"); //设置声道数 
-        command.add("2"); 
-        command.add("-ar"); //设置声音的采样频率
-        command.add("22050");*/
-         
-        command.add("-r"); // 设置帧速率
-        command.add("24");
         command.add("-s"); // 设置分辨率
         command.add(resolution);
-        command.add("-y"); // 添加参数＂-y＂，该参数指定将覆盖已存在的文件
+		command.add("-y");
         command.add(outputPath);
         return command;
     }
-
-
-	class FFmpegException extends Exception {
-
-		private static final long serialVersionUID = 1L;
-	
-		public FFmpegException() {
-			super();
-		}
-	
-		public FFmpegException(String message) {
-			super(message);
-		}
-	
-		public FFmpegException(Throwable cause) {
-			super(cause);
-		}
-	
-		public FFmpegException(String message, Throwable cause) {
-			super(message, cause);
-		}
-	}
 }
