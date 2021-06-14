@@ -26,10 +26,6 @@ public class UploadController {
 
     @Autowired
     private RabbitTemplate template;
-
-    private static final boolean NON_DURABLE = false;
-	private static final String MY_QUEUE_NAME = "encodeQueue";
-
  
     @PostMapping()
     @ResponseBody
@@ -46,6 +42,7 @@ public class UploadController {
             data.put("bucketName",MinioProp.MINIO_BUCKET);
             data.put("fileName",orgfileName);
             template.convertAndSend("encodeQueue", orgfileName + "," + contentType);
+            template.convertAndSend("downloadQueue", orgfileName);
             return ResponseEntity.ok().body(orgfileName);
         } catch (Exception e) {
             e.printStackTrace();
