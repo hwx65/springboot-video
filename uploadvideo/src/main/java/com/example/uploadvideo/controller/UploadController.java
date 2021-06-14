@@ -45,7 +45,7 @@ public class UploadController {
             Map<String,Object> data=new HashMap<>();
             data.put("bucketName",MinioProp.MINIO_BUCKET);
             data.put("fileName",orgfileName);
-            template.convertAndSend("encodeQueue", "Hello ampq");
+            template.convertAndSend("encodeQueue", orgfileName + "," + contentType);
             return ResponseEntity.ok().body(orgfileName);
         } catch (Exception e) {
             e.printStackTrace();
