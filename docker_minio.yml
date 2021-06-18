@@ -1,0 +1,24 @@
+version: '3' 
+services:
+  minio:
+    image: minio/minio:latest                                  
+    container_name: minio                                        
+    restart: always                                             
+    volumes:                                                 
+      - "./data:/data"
+      - "./minio:/minio"
+      - "./config:/root/.minio"
+    environment: 
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+      MINIO_PROMETHEUS_AUTH_TYPE: "public"
+      MINIO_ACCESS_KEY: "root"                       
+      MINIO_SECRET_KEY: "password"                  
+    command: server /data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+    ports:                             
+      - "9293:9000"
+      - "42330:42330"

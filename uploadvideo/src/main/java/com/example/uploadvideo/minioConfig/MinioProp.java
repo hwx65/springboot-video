@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MinioProp {
     public static final String MINIO_BUCKET = "video";
 
-    private String endpoint="http://localhost:9293";//连接url
+    private String endpoint="http://host.docker.internal:9293";//连接url
     public String getEndpoint() {
         return endpoint;
     }

@@ -5,8 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "minio")
 public class MinioProp {
     public static final String MINIO_BUCKET = "video";
+    public static final String MINIO_BUCKET1 = "720p";
+    public static final String MINIO_BUCKET2 = "360p";
 
-    private String endpoint="http://localhost:9293";//连接url
+    private String endpoint="http://host.docker.internal:9293";//连接url
     public String getEndpoint() {
         return endpoint;
     }

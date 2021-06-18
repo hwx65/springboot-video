@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+<body>
+    <table><tbody>
+        <tr th:each ="i:${info}">
+            <td>
+                <a th:href="@{/video/__${i}__}" th:text = "${i}"></a>
+            </td>
+        </tr>
+    </tbody></table>
+</body>
+</html>

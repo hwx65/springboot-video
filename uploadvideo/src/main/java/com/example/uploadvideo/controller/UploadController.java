@@ -26,32 +26,46 @@ public class UploadController {
 
     @Autowired
     private RabbitTemplate template;
- 
-    @PostMapping()
+
+    @PostMapping("/")
     @ResponseBody
     ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
-        if(file == null || file.getSize() == 0) {
+        if (file == null || file.getSize() == 0) {
             return ResponseEntity.badRequest().build();
         }
         String orgfileName = file.getOriginalFilename();
         try {
             InputStream in = file.getInputStream();
-            String contentType= file.getContentType();
-            minioClient.putObject(MinioProp.MINIO_BUCKET,orgfileName,in,null, null, null, contentType);
-            Map<String,Object> data=new HashMap<>();
-            data.put("bucketName",MinioProp.MINIO_BUCKET);
-            data.put("fileName",orgfileName);
+            String contentType = file.getContentType();
+            minioClient.putObject(MinioProp.MINIO_BUCKET, orgfileName, in, null, null, null, contentType);
+            Map<String, Object> data = new HashMap<>();
+            data.put("bucketName", MinioProp.MINIO_BUCKET);
             template.convertAndSend("encodeQueue", orgfileName + "," + contentType);
-            template.convertAndSend("downloadQueue", orgfileName);
             return ResponseEntity.ok().body(orgfileName);
         } catch (Exception e) {
+            System.out.print(e);
             e.printStackTrace();
         }
         return ResponseEntity.badRequest().build();
     }
 
     @GetMapping("/")
-	public String welcome() {
-		return "upload";
-	}
+    public String welcome() {
+        try {
+            boolean isExist = minioClient.bucketExists("video");
+            if (!isExist) {
+                minioClient.makeBucket("video");
+            }
+            isExist = minioClient.bucketExists("720p");
+            if (!isExist) {
+                minioClient.makeBucket("720p");
+            }
+            isExist = minioClient.bucketExists("360p");
+            if (!isExist) {
+                minioClient.makeBucket("360p");
+            }
+        } catch (Exception e) {
+        }
+        return "upload";
+    }
 }
