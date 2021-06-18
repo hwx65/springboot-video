@@ -32,11 +32,11 @@ https://www.bilibili.com/video/BV1Dv411p7CX （因为中间有一次播放视频
 
 * 在 `uploadvideo` 项目中实现，在该项目中运行 `mvn spring-boot:run` 之后可以通过 `localhost:8080` 访问，访问到的页面如下：
 
-  ![image-20210617202524342](./test&results/images/image-20210617202524342.png)
+  <img src="./test&results/images/image-20210617202524342.png" alt="image-20210617202524342" style="zoom:67%;" />
 
 * 点击 `选择文件` 按钮选择需要上传的视频，然后点击 `上传` 按钮完成视频的上传，视频上传成功之后会返回视频的文件名。
 
-  <img src="C:\Users\hwx\AppData\Roaming\Typora\typora-user-images\image-20210617205152523.png" alt="image-20210617205152523" style="zoom:67%;" />
+  <img src="./test&results/images/image-20210617205152523.png" alt="image-20210617205152523" style="zoom:67%;" />
 
 * 内部逻辑为，在 controller 中连接 `MinIO`，并创建三个 Bucket，之后把获得的视频放入 Bucket `video`中，并把视频文件的文件名和类型通过 `rabbitmq` 传递给 `encodevide` 进行编码。
 
@@ -53,11 +53,11 @@ https://www.bilibili.com/video/BV1Dv411p7CX （因为中间有一次播放视频
 
 * 在 `downloadvideo` 项目中实现，通过 `mvn spring-boot:run` 指令运行，然后通过 `localhost:8082` 访问，访问到的界面如下，其中展示了上传之后的所有视频名
 
-  <img src="C:\Users\hwx\AppData\Roaming\Typora\typora-user-images\image-20210617211959848.png" alt="image-20210617211959848" style="zoom:67%;" />
+  <img src="./test&results/images/image-20210617211959848.png" alt="image-20210617211959848" style="zoom:67%;" />
 
 * 点击视频之后跳转到播放页面，在播放页面可以通过最上面的六个按钮选择不同的清晰度或者下载该视频的不同清晰度版本
 
-  <img src="C:\Users\hwx\AppData\Roaming\Typora\typora-user-images\image-20210617212156176.png" alt="image-20210617212156176" style="zoom:67%;" />
+  <img src="./test&results/images/image-20210617212156176.png" alt="image-20210617212156176" style="zoom:67%;" />
 
 * 内部逻辑为，读取 `MinIO` 原视频所在的 Bucket: `video`，获得所有的文件名之后展示在首页，然后点击视频之后跳转到播放页，在播放页中根据不同清晰度从 `MinIO` 对应 Bucket 中读取对应视频，然后进行播放或者下载。
 
