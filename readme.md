@@ -32,7 +32,7 @@ https://www.bilibili.com/video/BV1Dv411p7CX （因为中间有一次播放视频
 
 * 在 `uploadvideo` 项目中实现，在该项目中运行 `mvn spring-boot:run` 之后可以通过 `localhost:8080` 访问，访问到的页面如下：
 
-  <img src="C:\Users\hwx\AppData\Roaming\Typora\typora-user-images\image-20210617202524342.png" alt="image-20210617202524342" style="zoom:67%;" />
+  ![image-20210617202524342](./test&results/images/image-20210617202524342.png)
 
 * 点击 `选择文件` 按钮选择需要上传的视频，然后点击 `上传` 按钮完成视频的上传，视频上传成功之后会返回视频的文件名。
 
